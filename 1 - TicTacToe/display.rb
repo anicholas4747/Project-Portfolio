@@ -30,7 +30,7 @@ class Display
 
                 print slot.colorize(:color => :white, :background => back_color)
                 if c_i < 2
-                    print "|"
+                    print "|".colorize(:color => :white, :background => :black)
                 end
             end
             if r_i <  2
