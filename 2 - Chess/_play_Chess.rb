@@ -34,12 +34,12 @@ elsif mode == "pvc"
     pck = (1..10).to_a.sample
     if pck.odd?
         puts "The computer will go first"
-        p1 = ComputerPlayer.new(:W,b)
+        p1 = ComputerPlayer.new(:W,b,disp)
         p2 = HumanPlayer.new(:B,disp)
     else
         puts "The player will go first"
         p1 = HumanPlayer.new(:W,disp)
-        p2 = ComputerPlayer.new(:B,b)
+        p2 = ComputerPlayer.new(:B,b,disp)
     end
     sleep 3.5
 end
