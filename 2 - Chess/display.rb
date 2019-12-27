@@ -4,21 +4,35 @@ require_relative "cursor.rb"
 require_relative "board.rb"
 class Display
     attr_reader :board, :cursor
-    attr_accessor :show_possible_moves, :piece_to_move
+    attr_accessor :show_possible_moves, :piece_to_move, :pos_moves
     def initialize(board)
         @cursor = Cursor.new([0,0], board)
         @board = board
         @show_possible_moves = false
         @piece_to_move = nil
+        @pos_moves = []
+        @at_least_one = false
+        @check = false
     end
 
     def render
-        system "clear"
-
+        puts "\nLoading..."
         if cursor.clicked == false
+            @show_possible_moves = false
             @piece_to_move = nil 
+        else
+            @piece_to_move = board[cursor.cursor_pos] if @piece_to_move.nil?
+            unless @piece_to_move.class == NullPiece
+                @pos_moves = piece_to_move.valid_moves unless @show_possible_moves
+            end
+            @show_possible_moves = true
         end
 
+        @at_least_one = false
+        @check = false
+
+        system "clear"
+        
         board.grid.each_with_index do |row,r_i|
             row.each_with_index do |tile,c_i|
                 #text to display
@@ -47,18 +61,10 @@ class Display
                 tile.color == :B ? act_color = :black : act_color = :cyan
 
                 #color possible moves when cell is selected
-                if cursor.clicked || show_possible_moves
-
-                    if show_possible_moves && cursor.clicked
-                        show_possible_moves = false
-                    elsif !show_possible_moves && cursor.clicked
-                        show_possible_moves = true
-                        @piece_to_move = board[cursor.cursor_pos] if @piece_to_move.nil?
-                        
-                    end
-
+                if cursor.clicked
                     if piece_to_move != nil && piece_to_move.color != nil
-                        if piece_to_move.move_dirs.include?([r_i,c_i])
+                        if pos_moves.include?([r_i,c_i])
+                            @at_least_one = true
                             back_color = :blue
                             piece_to_move.color == :B ? opp_color = :W : opp_color = :B
                             if board[[r_i,c_i]].color == opp_color
@@ -72,16 +78,32 @@ class Display
                     back_color = :green
                 end
 
+                #king in check
+                if board[[r_i,c_i]].class == King && board.in_check?(board[[r_i,c_i]].color)
+                    back_color = :red
+                    @check = true
+                end
                 #print cell
                 print slot.colorize(:color => act_color, :background => back_color)
             end
             puts
         end
-
-        puts "\n\n"
+        if cursor.clicked && !@at_least_one
+            puts "\nTHIS PIECE HAS NO VALID MOVES"
+        end
+        if @check
+            if board.checkmate?(:B) || board.checkmate?(:W)
+                puts "\nCHECKMATE!"
+            elsif board.in_check?(:B) || board.in_check?(:W)
+                puts "\nCHECK!" 
+            end
+        end
+        
+        puts "\n" + ("-"*75)
         puts "- Use the arrow keys to move"
-        puts "- Press [return] or [spacebar] to select a position"
+        puts "- Press [return] or [spacebar] to toggle select on a position"
         puts "- Press [Q], [esc], or [^+C] to quit"
+        puts ("-"*75)
 
         # puts "cursor.clicked = #{cursor.clicked}"
         # puts "show_possible_moves = #{show_possible_moves}"

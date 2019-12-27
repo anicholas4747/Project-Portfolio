@@ -10,6 +10,7 @@ class Board
         @sentinel = NullPiece.instance
         @grid = Array.new(8) { Array.new(8, sentinel) }
         self.populate
+        @made_moves = []
     end
 
     def populate
@@ -73,22 +74,90 @@ class Board
     end
 
     def move_piece(color, start_pos, end_pos)
-        unless start_pos == end_pos
+        if start_pos == end_pos
+            raise "PLEASE MAKE A MOVE"
+        else
             tile = self[start_pos]
             raise "INVALID STARTING POSITION" if tile.color == nil
             raise "INVALID MOVE" unless valid_move?(tile,end_pos)
+            raise "THAT MOVE WILL LEAVE YOUR KING IN CHECK" unless tile.valid_moves.include?(end_pos)
 
+            @made_moves << [color,start_pos,end_pos]
             tile.pos = end_pos
             self[end_pos] = self[start_pos]
             self[start_pos] = NullPiece.instance
         end
     end
 
-    
+    def move_piece!(color, start_pos, end_pos)
+        unless start_pos == end_pos
+            tile = self[start_pos]
+            raise "INVALID STARTING POSITION" if tile.color == nil
+            raise "INVALID MOVE" unless valid_move?(tile,end_pos)
 
+            @made_moves << [color,start_pos,end_pos]
+            tile.pos = end_pos
+            self[end_pos] = self[start_pos]
+            self[start_pos] = NullPiece.instance
+        end
+    end
+
+    def in_check?(color)
+        opp = (color == :B ? :W : :B)
+        opponent_moves = []
+
+        @grid.each_with_index do |row,r_i|
+            row.each_with_index do |cell,c_i|
+                if cell.color == opp
+                    opponent_moves += cell.move_dirs
+                end
+            end
+        end
+        
+        opponent_moves.any?{|pos| self[pos].class == King && self[pos].color == color}
+    end
+
+    def checkmate?(color)
+        my_moves = []
+
+        @grid.each_with_index do |row,r_i|
+            row.each_with_index do |cell,c_i|
+                if cell.color == color
+                    my_moves += cell.valid_moves
+                end
+            end
+        end
+        in_check?(color) && my_moves.empty?
+    end
+
+    def duplic
+        board_copy = Board.new
+        @made_moves.each do |move_args|
+            board_copy.move_piece(*move_args)
+        end
+        board_copy
+    end
 
 end
 
+
+if __FILE__ == $PROGRAM_NAME
+# NB Here's a four-move sequence to get to checkmate from a starting board for your checkmate testing:
+
+# f2, f3
+# e7, e5
+# g2, g4
+# d8, h4
+
+    test = Board.new
+    test.move_piece(:W, [6,5], [5,5])
+    test.move_piece(:B, [1,4], [3,4])
+    test.move_piece(:W, [6,6], [4,6])
+    test.move_piece(:B, [0,3], [4,7])
+    p test.in_check?(:W)
+    p test.checkmate?(:W)
+
+end
 # if __FILE__ == $PROGRAM_NAME
 #     system "clear"
 #     puts "-" * 50
