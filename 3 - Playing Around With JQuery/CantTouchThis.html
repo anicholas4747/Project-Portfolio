@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Playing Around W JQuery</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.js"></script>
+    <style>
+        button {
+            background-color: cornflowerblue;
+            border-radius: 15px;
+            font-size: 45px;
+            display:flex;
+            position:fixed;
+            color: white;
+            box-shadow: 5px 5px rgba(2, 121, 164, 0.365);
+            border: 2px solid black;
+        }
+
+        a {
+            display: none;
+            font-size: 30px;
+        }
+    </style>
+</head>
+<a href=""></a>
+<body>
+    <button>Can't Touch This 😜</button>
+    
+    <script>
+        let count = 0;
+        let $bdy = $("body");
+        // event delegation - event on container, but when you do an action on the child element, trigger the event
+        // $("container").on ("action", "element", cb_function)
+        $bdy.on("mouseover", "button", event => {
+            const currentTarget = event.currentTarget;
+            const $currentTarget = $(currentTarget);
+            $currentTarget.css("background-color", `#${Math.floor(Math.random() * 77) - 1}${Math.floor(Math.random() * 82) - 1}${Math.floor(Math.random() * 91) - 1}`)
+            $currentTarget.css("top", Math.floor(Math.random() * (700 - (count * 3))));
+            $currentTarget.css("left", Math.floor(Math.random() * (700 - (count * 3))));
+            $("a").css("display","block");
+            $("a").text(`Attempts: ${count + 1}`);
+            $("a").attr("href", "https://github.com/anicholas4747/Project-Portfolio");
+
+            count++
+        });
+        $bdy.on("click", "button", event => {
+            alert(`You got me in ${count} tries!`);
+            count = 0;
+            let $newButton = $("<button>Can't Touch This 😜</button>");
+            $newButton.css("background-color", `#${Math.floor(Math.random() * 77) - 1}${Math.floor(Math.random() * 82) - 1}${Math.floor(Math.random() * 91) - 1}`)
+            $newButton.css("top", Math.floor(Math.random() * (700 - (count * 3))));
+            $newButton.css("left", Math.floor(Math.random() * (700 - (count * 3))));
+            $("body").append($newButton);
+        });
+    </script>
+</body>
+</html>
